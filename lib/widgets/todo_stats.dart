@@ -1,128 +1,173 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:todo/main.dart';
 
-class TodoStats extends StatefulWidget {
-  final int totalItems; 
+
+const double containerHeight = 365;
+const double minContainerHeight = 215;
+
+class TodoStats extends SliverPersistentHeaderDelegate {
+  final String title;
+  final int totalItems;
   final int completedCount;
 
-  const TodoStats({ 
-    Key? key, 
+  double height = containerHeight;
+
+  TodoStats({
+    required this.title,
+    required this.totalItems,
     required this.completedCount,
-    required this.totalItems
-  }) : super(key: key);
+  });
 
   @override
-  _TodoStatsState createState() => _TodoStatsState();
-}
-
-class _TodoStatsState extends State<TodoStats> {
-  String greeting = '';
-
-  @override
-  void initState() {
-    // Greeting
-    int hour = DateTime.now().hour;
-    if (hour >= 0 && hour <= 12) { greeting = 'Good Morning!'; }
-    else if (hour > 12 && hour <= 18) { greeting = 'Good Afternoon!'; }
-
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double heightFactor = height * 0.35;
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final scale = 1 - max(0, shrinkOffset) / maxExtent;
+    final offset = Offset(0, -((1 - scale) * minExtent));
+    final double opacity = min(1, max(1 - shrinkOffset / (maxExtent * 0.3), 0));
+    
+    final isReduced = scale <= 0.8;
+    
+    final progress = (completedCount / totalItems).defaultIfNaN(0);
 
     return DefaultTextStyle(
-      style: const TextStyle(color: Colors.white),
-      child: SizedBox(
-        height: heightFactor,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 28),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      style: const TextStyle(color: Colors.white, fontFamily: 'Poppins'),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey.shade900,
+        ),
+        child: SafeArea(
+          child: Stack(
             children: [
-              Text(greeting, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w600)),
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        children: [
-                          const Text("TODAY'S PROGRESS"),
-                          const Spacer(),
-                          Text(
-                            '${((widget.completedCount / widget.totalItems) * 100).floor().toString()}%', 
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)
-                          )
-                        ],
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(top: 10),
-                        child: LinearProgressIndicator(
-                          backgroundColor: Colors.white10,
-                          value: widget.completedCount / widget.totalItems,
+              Positioned.fill(
+                top: 15,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: 20,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                  ),
+                )
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 24, 12, 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Visibility(
+                      visible: !isReduced,
+                      child: Transform.translate(
+                        offset: offset,
+                        child: Opacity(
+                          opacity: opacity,
+                          child: Text(title, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w600))
                         )
                       )
-                    ],
-                  )
-                ),
-              ),
-              SizedBox(
-                height: 80,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: const BorderRadius.all(Radius.circular(8)),
-                          border: Border.all(width: 2, color: Colors.amber.shade400, ),
+                    ),
+                    Visibility(
+                      visible: !isReduced,
+                      replacement: const SizedBox(),
+                      child: Transform.translate(
+                        offset: offset,
+                        child: Opacity(
+                          opacity: opacity,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text("TODAY'S PROGRESS"),
+                                  const Spacer(),
+                                  Text(
+                                    '${(progress * 100).floor().toString()}%', 
+                                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)
+                                  )
+                                ],
+                              ),
+                              Container(
+                                margin: const EdgeInsets.only(top: 10),
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  color: Colors.cyan.shade500,
+                                  backgroundColor: Colors.white10,
+                                )
+                              )
+                            ],
+                          ),
                         ),
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              (widget.totalItems - widget.completedCount).toString(),
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)
-                            ),
-                            const Text('In progress '),
-                          ],
-                        )
                       ),
                     ),
-                    const SizedBox(width: 12,),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.cyan.shade500,
-                          borderRadius: const BorderRadius.all(Radius.circular(8)),
-                          border: Border.all(width: 2, color: Colors.cyan.shade400, ),
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              widget.totalItems.toString(),
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.amber,
+                              borderRadius: const BorderRadius.all(Radius.circular(8)),
+                              border: Border.all(width: 2, color: Colors.amber.shade400, ),
                             ),
-                            const Text('Completed'),
-                          ],
-                        )
-                      ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  (totalItems - completedCount).toString(),
+                                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)
+                                ),
+                                const Text('In progress '),
+                              ],
+                            )
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.cyan.shade500,
+                              borderRadius: const BorderRadius.all(Radius.circular(8)),
+                              border: Border.all(width: 2, color: Colors.cyan.shade400, ),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  completedCount.toString(),
+                                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600)
+                                ),
+                                const Text('Completed'),
+                              ],
+                            )
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              )
-            ],
+              ),
+            ]
           ),
         ),
       ),
     );
+  }
+
+  @override
+  double get minExtent => minContainerHeight;
+
+  @override
+  double get maxExtent => containerHeight;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true;
   }
 }

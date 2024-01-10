@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:todo/pages/todo_page.dart';
 
+extension DefaultNaN on double {
+  double defaultIfNaN(double value) => isNaN ? value : this;
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
@@ -16,7 +20,12 @@ class MyApp extends StatelessWidget {
       title: 'To-Do App',
       home: const TodoPage(),
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Poppins'),
+      theme: ThemeData(
+        fontFamily: 'Poppins',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.cyanAccent,
+        ),
+      ),
     );
   }
 }

@@ -4,7 +4,7 @@ import 'package:todo/main.dart';
 
 
 const double containerHeight = 365;
-const double minContainerHeight = 215;
+const double minContainerHeight = 220;
 
 class TodoStats extends SliverPersistentHeaderDelegate {
   final String title;
@@ -45,7 +45,7 @@ class TodoStats extends SliverPersistentHeaderDelegate {
                   child: Container(
                     height: 20,
                     decoration: const BoxDecoration(
-                      color: Colors.white,
+                      color: Color.fromARGB(255, 250, 253, 252),
                       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                     ),
                   ),
@@ -69,7 +69,6 @@ class TodoStats extends SliverPersistentHeaderDelegate {
                     ),
                     Visibility(
                       visible: !isReduced,
-                      replacement: const SizedBox(),
                       child: Transform.translate(
                         offset: offset,
                         child: Opacity(

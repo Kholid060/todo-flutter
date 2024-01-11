@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:todo/database.dart';
 import 'package:todo/models/model_todo_item.dart';
 import 'package:todo/widgets/todo_stats.dart';
 import 'package:todo/widgets/todo_tile.dart';
@@ -34,31 +35,30 @@ class _TodoPageState extends State<TodoPage> {
 
   @override
   void initState() {
-    items = List.generate(19, (index) => 
-      ModelTodoItem(
-        id: index,
-        done: index.isOdd,
-        createdAt: DateTime.now().toString(),
-        title: 'Item $index',
-        description: index.isEven ? 'hHahaha' : ''
-      ),
-    );
+    TodoDatabase.list().then((value) {
+      setState(() {
+        items = value;
+      });
+    });
 
     _scrollController = ScrollController();
 
     super.initState();
   }
 
-  void toggleItemDone(int id, bool done) {
+  void toggleItemDone(int id, bool done) async {
     final itemIdx = items.indexWhere((element) => element.id == id);
     if (itemIdx == -1) return;
 
-    setState(() {
-      items[itemIdx].done = done;
-    });
+    items[itemIdx].done = done;
+    await TodoDatabase.update(items[itemIdx]);
+
+    setState(() {});
   }
 
-  void deleteItem(int id) {
+  void deleteItem(int id) async {
+    await TodoDatabase.delete(id);
+
     final itemIdx = items.indexWhere((element) => element.id == id);
     if (itemIdx == -1) return;
 
@@ -127,34 +127,37 @@ class _TodoPageState extends State<TodoPage> {
                       width: double.infinity,
                       child: ElevatedButton(
                         child: Text(type == AddEditType.add ? 'Add task' : 'Update task'),
-                        onPressed: () {
+                        onPressed: () async {
                           bool isInvalid = !(_addTodoFormKey.currentState?.validate() ?? false);
                           if (isInvalid) return;
 
                           if (type == AddEditType.add) {
-                            final tempItem = ModelTodoItem(
-                              done: false,
-                              id: items.length + 1,
-                              title: titleController.text,
-                              createdAt: DateTime.now().toString(),
-                              description: descriptionController.text,
+                            final item = await TodoDatabase.insert(
+                              ModelTodoItem(
+                                done: false,
+                                id: -1, // temp 1
+                                title: titleController.text,
+                                createdAt: DateTime.now().toString(),
+                                description: descriptionController.text,
+                              )
                             );
 
                             setState(() {
-                              items.add(tempItem);
+                              items.add(item);
                             });
                           } else {
                             final itemIdx = items.indexWhere((element) => element.id == itemId);
                             if (itemIdx != -1) {
-                              setState(() {
-                                items[itemIdx]
-                                  ..title = titleController.text
-                                  ..description = descriptionController.text;
-                              });
+                              items[itemIdx]
+                                ..title = titleController.text
+                                ..description = descriptionController.text;
+
+                              await TodoDatabase.update(items[itemIdx]);
+                              setState(() {});
                             }
                           }
 
-                          Navigator.pop(context);
+                          if (context.mounted) Navigator.pop(context);
                         },
                       ),
                     ),

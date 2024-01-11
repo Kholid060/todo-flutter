@@ -12,4 +12,15 @@ class ModelTodoItem {
     this.description = '',
     required this.createdAt,
   });
+
+   Map<String, Object?> toMap() {
+    var map = <String, Object?>{
+      'done': done,
+      'title': title,
+      'createdAt': createdAt,
+      'description': description,
+    };
+
+    return map;
+  }
 }

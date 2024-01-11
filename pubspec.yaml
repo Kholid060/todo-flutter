@@ -39,6 +39,8 @@ dependencies:
   google_fonts: ^6.1.0
   get: ^4.6.6
   sliver_tools: ^0.2.12
+  sqflite: ^2.3.0
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

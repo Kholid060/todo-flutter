@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo/database.dart';
 import 'package:todo/pages/todo_page.dart';
 
 extension DefaultNaN on double {
@@ -7,6 +8,8 @@ extension DefaultNaN on double {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await TodoDatabase.initDB();
+
   runApp(const MyApp());
 }
 

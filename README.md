@@ -2,4 +2,4 @@
 
 To-Do App built with flutter.
 
-![demo](./docs/demo.gif)
+<img src="./docs/demo.gif" alt="demo" height="600" />

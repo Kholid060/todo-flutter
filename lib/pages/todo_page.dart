@@ -21,7 +21,7 @@ enum AddEditType {
 }
 
 class TodoPage extends StatefulWidget {
-  const TodoPage({ Key? key }) : super(key: key);
+  const TodoPage({ super.key });
 
   @override
   State<TodoPage> createState() => _TodoPageState();
